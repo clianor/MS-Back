@@ -14,7 +14,7 @@ class Company extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({unique: true})
   name!: string;
 
   @OneToMany(() => User, (user) => user.id)

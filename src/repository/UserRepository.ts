@@ -1,15 +1,17 @@
-import {EntityRepository, Repository} from "typeorm";
+import {EntityRepository, getCustomRepository, Repository} from "typeorm";
 import {RegisterInput} from "../types/auth";
 import User from "../entities/User";
 import argon2 from "argon2";
+import CompanyRepository from "./CompanyRepository";
 
 type registerUserProps = {
   email: string;
   password: string;
+  companyName: string;
 }
 
 type findUserProps = {
-  email?: string;
+  email: string;
 }
 
 @EntityRepository(User)
@@ -18,15 +20,34 @@ class UserRepository extends Repository<User> {
    * 회원가입
    * @param {RegisterInput} values 회원가입에 필요한 유저정보 입니다.
    */
-  async registerUser({email, password}: registerUserProps) {
+  async registerUser({email, password, companyName}: registerUserProps) {
     const hashedPassword = await argon2.hash(password);
 
-    let user;
     await this.queryRunner?.startTransaction();
+
+    // 유저 존재 여부 확인 후 유저 추가
+    let company;
+    let user;
     try {
+      // 회사 존재 여부 확인 후 없으면 회사 추가
+      const companyRepository = getCustomRepository(CompanyRepository);
+      const isCompany = await companyRepository.isCompany(companyName)
+
+      if (!isCompany) {
+        // 회사가 존재하지 않으면 생성
+        company = await companyRepository.createCompany(companyName);
+      } else {
+        company = await companyRepository.findCompany(companyName);
+
+        if (!company) {
+          return;
+        }
+      }
+
       user = this.create();
       user.email = email;
       user.password = hashedPassword;
+      user.companyId = company.id;
       await this.save(user);
 
       await this.queryRunner?.commitTransaction();
@@ -48,7 +69,6 @@ class UserRepository extends Repository<User> {
 
     if (userCount > 0)
       return true;
-
     return false;
   }
 }
