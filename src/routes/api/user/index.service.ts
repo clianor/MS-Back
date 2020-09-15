@@ -45,6 +45,7 @@ export const registerService = async (req: Request, res: Response) => {
         message: "회원가입에 실패하였습니다.",
       }
     });
+    return;
   }
 
   res.status(200).json({
