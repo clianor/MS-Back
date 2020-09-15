@@ -1,6 +1,6 @@
-import {UserInput} from "../../types/auth";
+import {RegisterInput} from "../../types/auth";
 
-export const validateRegister = (values: UserInput): any => {
+export const validateRegister = (values: RegisterInput): any => {
   if (!values.email.includes("@")) {
     return [
       {

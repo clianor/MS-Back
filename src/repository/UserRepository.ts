@@ -1,5 +1,5 @@
 import {EntityRepository, Repository} from "typeorm";
-import {UserInput} from "../types/auth";
+import {RegisterInput} from "../types/auth";
 import User from "../entities/User";
 import argon2 from "argon2";
 
@@ -16,7 +16,7 @@ type findUserProps = {
 class UserRepository extends Repository<User> {
   /**
    * 회원가입
-   * @param {UserInput} values 회원가입에 필요한 유저정보 입니다.
+   * @param {RegisterInput} values 회원가입에 필요한 유저정보 입니다.
    */
   async registerUser({email, password}: registerUserProps) {
     const hashedPassword = await argon2.hash(password);

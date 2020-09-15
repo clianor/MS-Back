@@ -1,16 +1,16 @@
 import {Request, Response} from "express";
 import {getCustomRepository} from "typeorm";
 import {validateRegister} from "../../../utils/auth/validateRegister";
-import {UserInput} from "../../../types/auth";
+import {RegisterInput} from "../../../types/auth";
 import UserRepository from "../../../repository/UserRepository";
 
 /**
  * 회원가입 로직
  */
 export const registerService = async (req: Request, res: Response) => {
-  const userInput: UserInput = req.body;
+  const registerInput: RegisterInput = req.body;
 
-  const errors = validateRegister(userInput);
+  const errors = validateRegister(registerInput);
   if (errors) {
     res.status(400).json({
       errors,
@@ -20,7 +20,7 @@ export const registerService = async (req: Request, res: Response) => {
   }
 
   const userRepository = getCustomRepository(UserRepository);
-  const isUser = await userRepository.isUser(userInput);
+  const isUser = await userRepository.isUser(registerInput);
 
   if (isUser) {
     res.status(409).json({
@@ -37,7 +37,7 @@ export const registerService = async (req: Request, res: Response) => {
   let user;
   try {
     const userRepository = getCustomRepository(UserRepository);
-    user = await userRepository.registerUser(userInput);
+    user = await userRepository.registerUser(registerInput);
   } catch (error) {
     res.status(500).json({
       errors: {
