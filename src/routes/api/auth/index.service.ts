@@ -44,12 +44,12 @@ export const registerService: MyService = async (req, res) => {
     return;
   }
 
-  let user;
+  let result;
   try {
     const userRepository = getCustomRepository(UserRepository);
-    user = await userRepository.registerUser(registerInput);
+    result = await userRepository.registerUser(registerInput);
 
-    if (!user) {
+    if (result.errors) {
       res.status(500).json({
         errors: {
           field: "etc",
@@ -68,14 +68,24 @@ export const registerService: MyService = async (req, res) => {
     return;
   }
 
-  req.session.userId = user.id;
+  if (!result.user) {
+    res.status(500).json({
+      errors: {
+        field: "etc",
+        message: "회원가입에 실패하였습니다.",
+      }
+    });
+    return;
+  }
+
+  req.session.userId = result.user.id;
   res.status(200).json({
-    user: user,
+    user: result.user,
   });
   return;
 };
 
-/*
+/**
  * 로그인 로직
  */
 export const loginService: MyService = async (req, res) => {
@@ -133,3 +143,27 @@ export const loginService: MyService = async (req, res) => {
     user: user,
   });
 };
+
+/**
+ * 내정보
+ */
+export const meService: MyService = async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    res.status(404).json({
+      errors: [{
+        field: "email",
+        message: "이메일을 찾을 수 없습니다.",
+      }],
+    });
+    return;
+  }
+
+  const userRepository = getCustomRepository(UserRepository);
+  const user = await userRepository.findUser({id: userId});
+
+  res.status(200).json({
+    user
+  })
+}

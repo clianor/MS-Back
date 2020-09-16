@@ -2,7 +2,7 @@ import {EntityRepository, getCustomRepository, Repository} from "typeorm";
 import User from "../entities/User";
 import argon2 from "argon2";
 import CompanyRepository from "./CompanyRepository";
-import {LoginResultUser} from "../types/auth";
+import {AuthResultUser} from "../types/auth";
 
 type loginUserProps = {
   email: string;
@@ -15,8 +15,12 @@ type registerUserProps = {
   companyName: string;
 }
 
-type findUserProps = {
+type isUserProps = {
   email: string;
+}
+
+type findUserProps = {
+  id: string;
 }
 
 @EntityRepository(User)
@@ -25,7 +29,7 @@ class UserRepository extends Repository<User> {
    * 로그인
    * @param {loginUserProps} values 로그인에 필요한 유저정보 입니다.
    */
-  async loginUser({email, password}: loginUserProps): Promise<LoginResultUser> {
+  async loginUser({email, password}: loginUserProps): Promise<AuthResultUser> {
     const user = await this.findOne({where: {email}});
     if (!user) {
       return {
@@ -54,7 +58,6 @@ class UserRepository extends Repository<User> {
       user: {
         id: user.id,
         email: user.email,
-        createdAt: user.createdAt,
       }
     };
   }
@@ -63,7 +66,7 @@ class UserRepository extends Repository<User> {
    * 회원가입
    * @param {registerUserProps} values 회원가입에 필요한 유저정보 입니다.
    */
-  async registerUser({email, password, companyName}: registerUserProps) {
+  async registerUser({email, password, companyName}: registerUserProps): Promise<AuthResultUser> {
     const hashedPassword = await argon2.hash(password);
 
     await this.queryRunner?.startTransaction();
@@ -92,20 +95,28 @@ class UserRepository extends Repository<User> {
       await this.queryRunner?.commitTransaction();
     } catch (error) {
       await this.queryRunner?.rollbackTransaction();
-      return;
+      return {
+        errors: [
+          {
+            field: "etc",
+            message: "알 수 없는 에러가 발생했습니다.",
+          },
+        ],
+      };
     }
 
     return {
-      id: user.id,
-      email: user.email,
-      createdAt: user.createdAt,
+      user : {
+        id: user.id,
+        email: user.email,
+      }
     };
   }
 
   /**
    * 유저 존재 여부
    */
-  async isUser({email}: findUserProps) {
+  async isUser({email}: isUserProps): Promise<boolean> {
     const userCount = await this.createQueryBuilder("user")
       .where("user.email = :email", {email})
       .getCount();
@@ -113,6 +124,21 @@ class UserRepository extends Repository<User> {
     if (userCount > 0)
       return true;
     return false;
+  }
+
+  /**
+   * 내정보
+   */
+  async findUser({id}: findUserProps): Promise<AuthResultUser> {
+    const user = await this.createQueryBuilder("user")
+      .select("user.id", "id")
+      .addSelect("user.email", "email")
+      .addSelect("company.name", "companyName")
+      .leftJoin("user.company", "company")
+      .where("user.id = :id", {id})
+      .getRawOne();
+
+    return user;
   }
 }
 

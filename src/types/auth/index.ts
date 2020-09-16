@@ -10,7 +10,7 @@ export type LoginInput = {
   password: string;
 }
 
-export type LoginResultUser = {
+export type AuthResultUser = {
   errors?: [{
     field: string;
     message: string;
@@ -18,6 +18,6 @@ export type LoginResultUser = {
   user?: {
     id: number;
     email: string;
-    createdAt: Date;
+    companyName?: string;
   }
 }
