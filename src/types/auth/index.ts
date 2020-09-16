@@ -16,7 +16,7 @@ export type AuthResultUser = {
     message: string;
   },],
   user?: {
-    id: number;
+    id: string;
     email: string;
     companyName?: string;
   }

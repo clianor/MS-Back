@@ -10,8 +10,8 @@ import Company from "./Company";
 
 @Entity()
 class User extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn("uuid")
+  id!: string;
 
   @Column({unique: true})
   email!: string;
