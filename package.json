@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node dist/index.js",
-    "dev": "nodemon -L --exec ts-node src/index.ts"
+    "dev": "nodemon -L --exec ts-node src/index.ts",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",

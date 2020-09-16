@@ -1,14 +1,13 @@
-import {Request, Response} from "express";
 import {getCustomRepository} from "typeorm";
 import {validateRegister} from "../../../utils/auth/validateRegister";
-import {RegisterInput} from "../../../types/auth";
+import {LoginInput, RegisterInput} from "../../../types/auth";
 import UserRepository from "../../../repository/UserRepository";
-import User from "../../../entities/User";
+import {MyService} from "../../../types/base";
 
 /**
  * 회원가입 로직
  */
-export const registerService = async (req: Request, res: Response) => {
+export const registerService: MyService = async (req, res) => {
   const registerInput: RegisterInput = req.body;
 
   if (!registerInput) {
@@ -69,10 +68,68 @@ export const registerService = async (req: Request, res: Response) => {
     return;
   }
 
-  // @ts-ignore
-  req.session?.userId = user.id;
+  req.session.userId = user.id;
   res.status(200).json({
     user: user,
   });
   return;
+};
+
+/*
+ * 로그인 로직
+ */
+export const loginService: MyService = async (req, res) => {
+  const loginInput: LoginInput = req.body;
+
+  const userRepository = getCustomRepository(UserRepository);
+  let result;
+
+  try {
+    result = await userRepository.loginUser(loginInput);
+  } catch (error) {
+    res.status(500).json({
+      errors: [{
+        field: "etc",
+        message: "알 수 없는 에러가 발생했습니다.",
+      }],
+    });
+    return;
+  }
+
+  // 에러가 존재하는 경우
+  if (result.errors) {
+    if (result.errors[0].field === "email") {
+      res.status(404).json({
+        errors: result.errors,
+      });
+    } else if (result.errors[0].field === "password") {
+      res.status(404).json({
+        errors: result.errors,
+      });
+    } else {
+      res.status(500).json({
+        errors: [{
+          field: "etc",
+          message: "알 수 없는 에러가 발생했습니다.",
+        }],
+      });
+    }
+    return;
+  }
+
+  const {user} = result;
+  if (!user) {
+    res.status(500).json({
+      errors: [{
+        field: "etc",
+        message: "알 수 없는 에러가 발생했습니다.",
+      }],
+    });
+    return;
+  }
+
+  req.session.userId = user.id;
+  res.status(200).json({
+    user: user,
+  });
 };

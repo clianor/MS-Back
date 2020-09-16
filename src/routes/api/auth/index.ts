@@ -1,20 +1,20 @@
-import express, {Request, Response} from "express";
-import {registerService} from "./index.service";
+import express from "express";
+import {registerService, loginService} from "./index.service";
 
 const router = express.Router();
 
 /**
- * 유저 정보 얻기
+ * 회원가입
  */
-router.get("/", (req: Request, res: Response) => {
-  res.send("auth get");
+router.post("/register", (req, res) => {
+  registerService(req, res);
 });
 
 /**
- * 회원가입
+ * 로그인
  */
-router.post("/register", (req: Request, res: Response) => {
-  registerService(req, res);
+router.post("/login", (req, res) => {
+  loginService(req, res);
 });
 
 export default router;
