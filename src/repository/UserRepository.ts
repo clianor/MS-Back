@@ -24,7 +24,6 @@ class UserRepository extends Repository<User> {
     const hashedPassword = await argon2.hash(password);
 
     await this.queryRunner?.startTransaction();
-
     // 유저 존재 여부 확인 후 유저 추가
     let company;
     let user;
@@ -38,17 +37,19 @@ class UserRepository extends Repository<User> {
         company = await companyRepository.createCompany(companyName);
       } else {
         company = await companyRepository.findCompany(companyName);
-
-        if (!company) {
-          return;
-        }
       }
 
       user = this.create();
       user.email = email;
       user.password = hashedPassword;
+      // @ts-ignore
       user.companyId = company.id;
       await this.save(user);
+
+      user = await this.findOne({
+        select: ["id", "email", "createdAt"],
+        where: {email}
+      })
 
       await this.queryRunner?.commitTransaction();
     } catch (error) {

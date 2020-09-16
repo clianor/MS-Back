@@ -1,7 +1,35 @@
-import express, {Router, Response} from "express";
+import {Router, Response} from "express";
+import session from "express-session";
 import morgan from "morgan";
 import path from "path";
-import {NODE_ENV, ROOT_DIR} from "../conf/constans";
+import cors from "cors";
+import parser from 'body-parser';
+import {COOKIE_NAME, NODE_ENV, ROOT_DIR} from "../conf/constans";
+
+const handleCors = (router: Router): void => {
+  router.use(cors({origin: true, credentials: true}));
+};
+
+const handleBodyRequestParsing = (router: Router) => {
+  router.use(parser.urlencoded({extended: true}));
+  router.use(parser.json());
+};
+
+const handleSession = (router: Router) => {
+  const options = {
+    name: COOKIE_NAME,
+    saveUninitialized: false,
+    secret: "ujkfshjkahsdfjkhasukfhlkasdfhks",
+    resave: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 days
+      httpOnly: true,
+      sameSite: "none",
+    },
+  }
+  // @ts-ignore
+  router.use(session(options));
+}
 
 const logger = (router: Router) => {
   router.use(NODE_ENV ?
@@ -19,9 +47,4 @@ const logger = (router: Router) => {
   );
 };
 
-const initSetting = (router: Router) => {
-  router.use(express.urlencoded({extended: true}));
-  router.use(express.json());
-};
-
-export default [logger, initSetting];
+export default [handleCors, handleBodyRequestParsing, handleSession, logger];

@@ -16,7 +16,7 @@ class CompanyRepository extends Repository<Company> {
    * 회사 찾기
    */
   async findCompany(companyName: string): Promise<Company | undefined> {
-    const company = await this.findOne({where: {companyName}})
+    const company = await this.findOne({where: {name: companyName}})
     return company;
   }
 
