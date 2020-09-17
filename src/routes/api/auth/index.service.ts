@@ -3,6 +3,7 @@ import {validateRegister} from "../../../utils/auth/validateRegister";
 import {LoginInput, RegisterInput} from "../../../types/auth";
 import UserRepository from "../../../repository/UserRepository";
 import {MyService} from "../../../types/base";
+import {COOKIE_NAME} from "../../../conf/constans";
 
 /**
  * 회원가입 로직
@@ -143,6 +144,26 @@ export const loginService: MyService = async (req, res) => {
     user: user,
   });
 };
+
+/**
+ * 로그아웃
+ */
+export const logoutService: MyService = async (req, res) => {
+  req.session.destroy((error: any) => {
+    res.clearCookie(COOKIE_NAME);
+
+    if (error) {
+      res.status(404).json({
+        success: false,
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+    })
+  });
+}
 
 /**
  * 내정보

@@ -1,5 +1,5 @@
 import express from "express";
-import {registerService, loginService, meService} from "./index.service";
+import {registerService, loginService, meService, logoutService} from "./index.service";
 
 const router = express.Router();
 
@@ -18,10 +18,17 @@ router.post("/login", (req, res) => {
 });
 
 /**
+ *
+ */
+router.get("/logout", (req, res) => {
+  logoutService(req, res);
+});
+
+/**
  * 내정보
  */
 router.post("/me", (req, res) => {
   meService(req, res);
-})
+});
 
 export default router;
