@@ -127,7 +127,7 @@ class UserRepository extends Repository<User> {
   }
 
   /**
-   * 내정보
+   * 유저 찾기
    */
   async findUser({id}: findUserProps): Promise<AuthResultUser> {
     const user = await this.createQueryBuilder("user")

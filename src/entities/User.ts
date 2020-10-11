@@ -23,7 +23,7 @@ class User extends BaseEntity {
   isAdmin!: boolean;
 
   @Column()
-  companyId: number;
+  companyId!: number;
 
   @ManyToOne(() => Company, (company) => company.id)
   company!: Company;
