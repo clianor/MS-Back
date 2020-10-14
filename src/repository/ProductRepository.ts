@@ -15,6 +15,25 @@ class ProductRepository extends Repository<Product> {
     product.userId = userId;
     return await this.save(product);
   }
+
+  /**
+   * 제품 리스트 (pagination)
+   */
+  async getProductList(userId: string, page: number = 0, limit: number = 10): Promise<Product[] | undefined> {
+    console.log(page, limit);
+    const products = await this.createQueryBuilder("product")
+      .select("product.id", "id")
+      .addSelect("product.name", "name")
+      .addSelect("product.unit", "unit")
+      .addSelect("product.description", "description")
+      .addSelect("product.image", "image")
+      .addSelect("product.createdAt", "createdAt")
+      .where("product.userId = :userId", {userId})
+      .take(limit)
+      .skip(page)
+      .getRawMany();
+    return products;
+  }
 }
 
 export default ProductRepository;

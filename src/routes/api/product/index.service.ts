@@ -2,7 +2,7 @@ import {MyService} from "../../../types/base";
 import {CreateProduct} from "../../../types/product";
 import {getCustomRepository} from "typeorm";
 import ProductRepository from "../../../repository/ProductRepository";
-import UserRepository from "../../../repository/UserRepository";
+import existUser from "../../../utils/auth/existUser";
 
 /**
  * 제품 등록 로직
@@ -20,9 +20,8 @@ export const productCreateService: MyService = async (req, res) => {
     });
   }
 
-  const userRepository = getCustomRepository(UserRepository);
-  const user = await userRepository.findUser({id: userId});
-  if (user) {
+  const isUser = await existUser(req);
+  if (isUser) {
     try {
       const productRepository = getCustomRepository(ProductRepository);
       const product = await productRepository.createProduct(userId, name, unit, image, description);
@@ -43,6 +42,38 @@ export const productCreateService: MyService = async (req, res) => {
         field: "etc",
         message: "권한 없음.",
       }],
-    })
+    });
   }
+};
+
+/**
+ * 제품 조회 로직
+ */
+export const productListService: MyService = async (req, res) => {
+  const {page, limit} = req.query;
+
+  const isUser = await existUser(req);
+  if (isUser) {
+    try {
+      const productRepository = getCustomRepository(ProductRepository);
+      const products = await productRepository.getProductList(req.session.userId, page, limit)
+      return res.status(200).json({
+        products
+      });
+    } catch (error) {
+      return res.status(500).json({
+        errors: [{
+          field: "etc",
+          message: "알 수 없는 에러 발생.",
+        }],
+      });
+    }
+  }
+
+  return res.status(401).json({
+    errors: [{
+      field: "etc",
+      message: "권한 없음.",
+    }],
+  });
 };

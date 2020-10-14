@@ -18,7 +18,7 @@ router.post("/login", (req, res) => {
 });
 
 /**
- *
+ * 로그아웃
  */
 router.get("/logout", (req, res) => {
   logoutService(req, res);
